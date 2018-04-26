@@ -177,6 +177,7 @@ var initHttpServer = () => {
 
     app.get('/blocks', (req, res) => res.send(JSON.stringify(blockchain.chain)));
     app.post('/mineBlock', (req, res) => {
+        console.log(req.body);
         var newBlock = blockchain.generateNextBlock(req.body.data);
         blockchain.addBlock(newBlock);
         broadcast(responseLatestMsg());
