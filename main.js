@@ -9,8 +9,18 @@ var http_port = process.env.HTTP_PORT || 3001;
 var p2p_port = process.env.P2P_PORT || 6001;
 var initialPeers = process.env.PEERS ? process.env.PEERS.split(',') : [];
 
+if (process.argv.length > 2) {
+    http_port = process.argv[2];
+}
+if (process.argv.length > 3) {    
+    p2p_port = process.argv[3];
+}
+if (process.argv.length > 4) {
+    initialPeers = process.argv[4].split(',');
+}
+
 class Block {
-    constructor(index, timestamp, data, previousHash = '') {
+    constructor(index, timestamp, data, previousHash) {
         this.index = index;
         this.previousHash = previousHash.toString();
         this.timestamp = timestamp;
@@ -29,7 +39,7 @@ class Blockchain{
     }
 
     createGenesisBlock() {
-        return new Block(0, Date.parse("2017-01-01"), "0");
+        return new Block(0, Date.parse("2017-01-01"), "0", "");
     }
 
     getLatestBlock() {
@@ -90,7 +100,7 @@ class P2PServer {
     initP2PServer() {
         var server = new WebSocket.Server({port: p2p_port});
         server.on('connection', ws => this.initConnection(ws));
-        console.log('listening websocket p2p port on: ' + p2p_port);
+        console.log('Listening websocket p2p port on: ' + p2p_port);
     }
 
     initConnection(ws) {

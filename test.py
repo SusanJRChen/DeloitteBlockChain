@@ -1,28 +1,39 @@
 import requests
 import json
+import subprocess
 
-requestPath = "http://localhost:3001"
+http_port = "3001"
+p2pport = "6001"
+
+requestPath = "http://localhost:"
+subprocess.check_call('npm --help', shell=True)
+
+def getHTTPPath():
+    return requestPath + ":" + http_port
+
+def getP2PPath():
+    return requestPath + ":" + p2pport
 
 def blocks():
-    url = requestPath + "/Blocks"
+    url = getHTTPPath() + "/Blocks"
     response = requests.get(url)
     return response.json()
 
 def addBlock(blockData):
     headers = {'content-type': 'application/json'}
-    url = requestPath + "/mineBlock"
+    url = getHTTPPath() + "/mineBlock"
     blockData = str(blockData).replace('\'', '"')
     response = requests.post(url, data = blockData, headers= headers)
     return response.json()
 
 def peers():
-    url = requestPath + "/Peers"
+    url = getHTTPPath() + "/Peers"
     response = requests.get(url)
     return response.json()
 
 def addPeer(peer):
     headers = {'content-type': 'application/json'}
-    url = requestPath + "/mineBlock"
+    url = getHTTPPath() + "/addPeer"
     peer = str(peer).replace('\'', '"')
     response = requests.post(url, peer, headers= headers)
     return response.json()
@@ -32,7 +43,7 @@ def createBlockData(data):
     return reqData
 
 def createPeer(peer):
-    reqData = {"data": peer}
+    reqData = {"peer": peer}
     return reqData
 
 def prettify(jsonStr):
@@ -40,9 +51,9 @@ def prettify(jsonStr):
     return json.dumps(json.loads(jsonStr), indent=2, sort_keys=True)
 
 
-blockData = createBlockData("Apple")
-addBlock(blockData)
-peer = createPeer("ws://localhost:6001")
-addPeer(peer)
-print("blocks: " + prettify(str(blocks())))
-print("peers: " + prettify(str(peers())))
+# blockData = createBlockData("Apple")
+# addBlock(blockData)
+# peer = createPeer("ws://localhost:6001")
+# addPeer(peer)
+# print("blocks: " + prettify(str(blocks())))
+# print("peers: " + prettify(str(peers())))
