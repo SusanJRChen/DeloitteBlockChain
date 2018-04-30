@@ -14,6 +14,7 @@ class Node:
     def mineBlock(self):
         url = self.requestUrl + "/mine"
         response = requests.get(url)
+        self.sync()
         return response.json()
 
     def newTransaction(self, sender, recipient, amount):    
@@ -22,6 +23,7 @@ class Node:
         data = {"sender": sender, "recipient": recipient, "amount": amount}    
         data = str(data).replace('\'', '"')
         response = requests.post(url, data = data, headers= headers)
+        self.mineBlock()
         return response.json()
 
     def register(self, nodes):
@@ -31,3 +33,9 @@ class Node:
         data = str(data).replace('\'', '"')
         response = requests.post(url, data = data, headers= headers)
         return response.json()
+    
+    def sync(self):
+        for peer in self.peers:
+            url = peer + "/nodes/resolve"
+            requests.get(url)
+

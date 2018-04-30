@@ -1,4 +1,4 @@
-import endpoint
+import nodeEndpoints
 import json
 
 ports = ['5000','5001','5002','5003','5004','5005','5006','5007','5008','5009','5010']
@@ -14,7 +14,7 @@ for port in ports:
     for peer in ports:
         if (peer != port):
             peers.append('http://localhost:' + peer)
-    node = endpoint.Node('http://localhost:'+port, peers)
+    node = nodeEndpoints.Node('http://localhost:'+ port, peers)
     nodes.append(node)
     node.register(node.peers)
 
