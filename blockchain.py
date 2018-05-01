@@ -2,6 +2,7 @@ import hashlib
 import json
 from time import time
 from urllib.parse import urlparse
+from argparse import ArgumentParser
 
 import requests
 from flask import Flask, jsonify, request
@@ -12,15 +13,17 @@ class Blockchain:
         self.pending_transaction = []
         self.chain = []
         self.nodes = set()
-        self.createNewBlock(proof=100, previous_hash='1')
+        self.createNewBlock(100, '1', 'none')
+        self.uniqueID = ''   
     
-    def createNewBlock(self, proof, previous_hash):
+    def createNewBlock(self, proof, previous_hash, creator_id):
         block = {
             'index': len(self.chain) + 1,
             'timestamp': time(),
             'transactions': self.pending_transaction,
             'proof': proof,
             'previous_hash': previous_hash or self.calculateHash(self.chain[-1]),
+            'creator_id': creator_id
         }
         self.pending_transaction = []
         self.chain.append(block)
@@ -133,7 +136,7 @@ def mineBlock():
     lastBlock = blockchain.getLastBlock()
     proof = blockchain.proofOfWork(lastBlock)
     previous_hash = blockchain.calculateHash(lastBlock)
-    block = blockchain.createNewBlock(proof, previous_hash)
+    block = blockchain.createNewBlock(proof, previous_hash, blockchain.uniqueID)
 
     response = {
         'message': 'created new block',
@@ -186,13 +189,19 @@ def handleNode():
 
     return jsonify(response), 200
 
+@app.route('/getUniqueID', methods=['GET'])
+def getUniqueID():
+    response = {
+        'uniqueID': blockchain.uniqueID
+    }
+    return jsonify(response), 200
 
 if __name__ == '__main__':
-    from argparse import ArgumentParser
-
     parser = ArgumentParser()
+    parser.add_argument('-i', '--identifier', default='ABCCorp', type=str, help='unique identifier')
     parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on')
     args = parser.parse_args()
     port = args.port
+    blockchain.uniqueID = args.identifier
 
     app.run(port=port)

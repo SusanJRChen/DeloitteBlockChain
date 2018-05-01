@@ -7,20 +7,41 @@
     <h4 class="pt-4">View chain</h4>
     
     <div class="pb-2">
-      <select class="custom-select" type="text" name="url" [(ngModel)]="selectedNode" (change)="onNodeChange($event.target.value)">
-        <option *ngFor="let node of nodes">{{node}}</option>
+      <select class="custom-select" type="text" name="url" [ngModel]="selectedNode.uniqueID" (change)="onNodeChange($event.target.value)">
+        <option *ngFor="let node of nodes">{{node.uniqueID}}</option>
       </select>
     </div>
     
     <ng-table [config]="config"
-      [rows]="rows" [columns]="columns">
+      [rows]="rows_table" [columns]="columns">
     </ng-table>
   </div>
 
   <div class="container">
+    <button class="btn btn-primary" data-toggle="modal" (click)="updateGeneratedTransactions()" data-target="#generateModal">Generate Transactions</button>
     <button class="btn btn-primary" data-toggle="modal" data-target="#transactionModal">Add Transaction</button>
     <button class="btn btn-primary" data-toggle="modal" (click)="updatePendingTransactions()" data-target="#mineBlockModal">Mine Block</button>
     <button class="btn btn-primary" data-toggle="modal" (click)="updateNodes()" data-target="#syncModal">Sync</button>
+  </div>
+
+  <div class="modal fade" tabindex="-1" role="dialog" id="generateModal">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Generate Transactions</h5>
+        </div>
+        <div class="modal-body">
+          <p>Add test transactions to pending transactions?</p>
+          <ng-table [config]="config"
+            [rows]="rows_generate" [columns]="columns">
+          </ng-table> 
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" (click)="addGeneratedTransactions()">Add</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="modal fade" tabindex="-1" role="dialog" id="transactionModal">
@@ -41,7 +62,7 @@
             <div class="form-group row">
               <label class="col-2 col-form-label">Date</label>
               <div class="col-10">
-                <input type="text" class="form-control" name="date" required [(ngModel)]="newTransaction.date" placeholder="mm/dd/yyyy">
+                <input type="text" class="form-control" name="date" required [(ngModel)]="newTransaction.date" placeholder="mm-dd-yyyy">
               </div>
             </div>
 

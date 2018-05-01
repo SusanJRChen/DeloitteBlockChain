@@ -13,19 +13,9 @@ class Node:
         data = str(data).replace('\'', '"')
         response = requests.post(url, data = data, headers= headers)
         return response.json()
-    
-    def sync(self):
-        for peer in self.peers:
-            url = peer + "/handleNode"
-            requests.get(url)
 
-ports = ['5000','5001','5002','5003','5004','5005','5006','5007','5008','5009','5010']
+ports = ['5000','5001','5002','5003','5004','5005','5006','5007','5008','5009']
 nodes = []
-
-def prettify(string):
-    jsonStr = str(string)
-    jsonStr = jsonStr.replace('\'', '"')
-    return json.dumps(json.loads(jsonStr), indent=2, sort_keys=True)
 
 for port in ports:
     peers = []
