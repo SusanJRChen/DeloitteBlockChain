@@ -69,12 +69,14 @@
         <p>{{ transactionResponse.message }}</p>
 
         <h4 class="pt-3">Mine block <small>for {{selectedNode}}</small></h4>
+        <p>Mining the block will append all pending transactions to a new block, connecting it to the blockchain</p>
         <form method="GET" action="/mineBlock">
           <button class="btn btn-primary" type="submit" value="submit">Mine</button>
         </form>
         <p>{{ mineBlockResponse.message }}</p>
 
         <h4 class="pt-3">Resolve <small>for {{selectedNode}}</small></h4>
+        <p>Resolve checks all blockchains from peers</p>
         <form method="GET" action="/resolve">
           <button class="btn btn-primary" type="submit" value="submit">Resolve</button>
         </form>
