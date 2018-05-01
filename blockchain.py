@@ -2,10 +2,10 @@ import hashlib
 import json
 from time import time
 from urllib.parse import urlparse
-from uuid import uuid4
 
 import requests
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 class Blockchain:
     def __init__(self):
@@ -45,7 +45,7 @@ class Blockchain:
             block = chain[i]
             prevBlock = chain[i-1]
 
-            if (calculateHash(prevBlock) != block['previous_hash']):
+            if (self.calculateHash(prevBlock) != block['previous_hash']):
                 return False
 
         return True
@@ -80,6 +80,8 @@ class Blockchain:
     
     def handleNode(self):
         for node in self.nodes:
+            if not 'http' in node:
+                node = 'http://' + node
             response = requests.get(node + '/chain')
 
             if response.status_code == 200:
@@ -93,13 +95,15 @@ class Blockchain:
         return False
 
 app = Flask(__name__)
+CORS(app)
 
 blockchain = Blockchain()
 
 @app.route('/chain', methods=['GET'])
 def chain():
     response = {
-        'chain': blockchain.chain
+        'chain': blockchain.chain,        
+        'length': len(blockchain.chain)
     }
     return jsonify(response), 200
 
@@ -116,6 +120,13 @@ def newTransaction():
 
     response = {'message': f'New transaction will be added to block {placedIndex}'}
     return jsonify(response), 201
+
+@app.route('/getPendingTransactions', methods=['GET'])
+def getPendingTransactions():
+    response = {
+        'transactions': blockchain.pending_transaction
+    }
+    return jsonify(response), 200
 
 @app.route('/mineBlock', methods=['GET'])
 def mineBlock():
@@ -150,6 +161,13 @@ def addPeers():
     }
 
     return jsonify(response), 201
+
+@app.route('/getPeers', methods=['GET'])
+def getPeers():
+    response = {
+        'peers': list(blockchain.nodes)
+    }
+    return jsonify(response), 200
 
 @app.route('/handleNode', methods=['GET'])
 def handleNode():
