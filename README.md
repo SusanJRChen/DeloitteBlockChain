@@ -4,7 +4,7 @@ Simple Block Chain implementation for Deloitte case competition during CUTC even
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. The instructions assume you have node.js, and python pre-installed.
 
 ### First, we need to install the python dependencies:
 
@@ -18,7 +18,9 @@ pip install flask_cors
 ```
 ### Next, we run the python scripts to set up the services:
 
-ports.py will launch 10 different nodes on your localhost on ports 5000,5001,5002,5003,5004,5005,5006,5007,5008,5009, while connect.py will connect each node with one another.
+ports.py will launch 10 different nodes on your localhost on ports 5000, 5001, 5002, 5003, 5004, 5005, 5006, 5007, 5008, 5009, while connect.py will connect each node with one another.
+
+Ensure that all blockchain services have launched before running connect.py
 
 ```
 python ports.py
