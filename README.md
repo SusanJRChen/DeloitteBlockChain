@@ -15,6 +15,7 @@ pip install requests
 pip install hashlib
 pip install flask
 pip install flask_cors
+pip install flask_jwt
 ```
 ### Next, we run the python scripts to set up the services:
 
