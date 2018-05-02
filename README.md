@@ -4,7 +4,7 @@ Simple Block Chain implementation for Deloitte case competition during CUTC even
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. The instructions assume you have node.js, and python pre-installed.
+These instructions will get you a copy of the project up running on your local machine for development and testing purposes. The instructions assume you have node.js, and python pre-installed.
 
 ### First, we need to install the python dependencies:
 
