@@ -11,11 +11,11 @@ These instructions will get you a copy of the project up and running on your loc
 There are a number of external python libraries used in this project, we may install them using pip.
 
 ```
-pip install requests
-pip install hashlib
-pip install flask
-pip install flask_cors
-pip install flask_jwt
+$ pip install requests
+$ pip install hashlib
+$ pip install flask
+$ pip install flask_cors
+$ pip install flask_jwt
 ```
 ### Next, we run the python scripts to set up the services:
 
@@ -24,8 +24,8 @@ ports.py will launch 10 different nodes on your localhost on ports 5000, 5001, 5
 Ensure that all blockchain services have launched before running connect.py.
 
 ```
-python ports.py
-python connect.py
+$ python ports.py
+$ python connect.py
 ```
 
 ### Now we can launch the Angular website for better management of the nodes:
@@ -33,7 +33,7 @@ python connect.py
 Install the required modules for the Angular project and launch the website.
 
 ```
-cd './nodeManager'
-npm install
-npm start
+$ cd './nodeManager'
+$ npm install
+$ npm start
 ```
