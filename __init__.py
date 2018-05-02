@@ -1,107 +1,32 @@
-import hashlib
-import json
-from time import time
-from urllib.parse import urlparse
+
+from model.blockchain import Blockchain
+from model.user import User, UserTable
 from argparse import ArgumentParser
-
-import requests
 from flask import Flask, jsonify, request
+from flask_jwt import JWT, jwt_required, current_identity
 from flask_cors import CORS
-
-class Blockchain:
-    def __init__(self):
-        self.pending_transaction = []
-        self.chain = []
-        self.nodes = set()
-        self.createNewBlock(100, '1', 'none')
-        self.uniqueID = ''   
-    
-    def createNewBlock(self, proof, previous_hash, creator_id):
-        block = {
-            'index': len(self.chain) + 1,
-            'timestamp': time(),
-            'transactions': self.pending_transaction,
-            'proof': proof,
-            'previous_hash': previous_hash or self.calculateHash(self.chain[-1]),
-            'creator_id': creator_id
-        }
-        self.pending_transaction = []
-        self.chain.append(block)
-        return block
-    
-    def createNewTransaction(self, id, date, description, debit, credit):
-        transaction = {
-            'id': id,
-            'date': date,
-            'description': description,
-            'debit': debit,
-            'credit': credit
-        }
-        self.pending_transaction.append(transaction)
-        return self.getLastBlock()['index'] + 1
-
-    def getLastBlock(self):
-        return self.chain[-1]
-    
-    def validChain(self, chain):
-        for i in range(1, len(chain)):
-            block = chain[i]
-            prevBlock = chain[i-1]
-
-            if (self.calculateHash(prevBlock) != block['previous_hash']):
-                return False
-
-        return True
-        
-    def calculateHash(self, block):
-        blockString = json.dumps(block, sort_keys=True).encode()
-        return hashlib.sha256(blockString).hexdigest()
-
-    def proofOfWork(self, lastBlock):
-        lastProof = lastBlock['proof']
-        lastHash = self.calculateHash(lastBlock)
-
-        proof = 0
-        while self.validProof(lastProof, proof, lastHash) is False:
-            proof += 1
-
-        return proof
-    
-    def validProof(self, lastProof, proof, lastHash):
-        guess = f'{lastProof}{proof}{lastHash}'.encode()
-        guessHash = hashlib.sha256(guess).hexdigest()
-        return guessHash[:4] == "0000"
-
-    def addPeer(self, address):
-        url = urlparse(address)
-        if url.netloc:
-            self.nodes.add(url.netloc)
-        elif url.path:
-            self.nodes.add(url.path)
-        else:
-            raise ValueError('Invalid URL')
-    
-    def handleNode(self):
-        for node in self.nodes:
-            if not 'http' in node:
-                node = 'http://' + node
-            response = requests.get(node + '/chain')
-
-            if response.status_code == 200:
-                length = response.json()['length']
-                chain = response.json()['chain']
-
-                if length > len(self.chain) and self.validChain(chain):
-                    self.chain = chain
-                    return True
-
-        return False
+import requests
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
 CORS(app)
 
-blockchain = Blockchain()
+#Sample table for authorized users abled to call certain endpoints
+users = [
+    User(1, 'user', 'password'),
+    User(2, 'user2', 'password'),
+    User(3, 'user3', 'password')
+]
 
+#Create Blockchain object, see more in './model/blockchain.py' file
+blockchain = Blockchain()
+#Create UserTable object, see more in './model/user.py' file
+userTable = UserTable(users)
+
+#Create a JSON Web Token handler using external library (flask_jwt)
+jwt = JWT(app, userTable.authenticate, userTable.identity)
+
+#Declare endpoint '/chain', this is a GET method and will return the blockchain data on this node
 @app.route('/chain', methods=['GET'])
 def chain():
     response = {
@@ -110,12 +35,16 @@ def chain():
     }
     return jsonify(response), 200
 
+#Declare endpoint '/newTransaction', this POST method will add a new transcation to pending transactions
+#Requires a valid JWT authentication token
 @app.route('/newTransaction', methods=['POST'])
+@jwt_required()
 def newTransaction():
     transaction = request.get_json()
 
     required = ['id', 'date', 'description', 'debit', 'credit']
 
+    #Checks that the passed in body is valid for a transaction
     if not all(key in transaction for key in required):
         return 'Invalid request', 400
 
@@ -124,6 +53,7 @@ def newTransaction():
     response = {'message': f'New transaction will be added to block {placedIndex}'}
     return jsonify(response), 201
 
+#Declare endpoint '/getPendingTransactions', this is a GET method and will return all pending transactions
 @app.route('/getPendingTransactions', methods=['GET'])
 def getPendingTransactions():
     response = {
@@ -131,15 +61,20 @@ def getPendingTransactions():
     }
     return jsonify(response), 200
 
+#Declare endpoint '/mineBlock'. When invoked, this GET method will add a block along with all pending transactions
+#will return values in the block and all pending transactions that it contains
 @app.route('/mineBlock', methods=['GET'])
+@jwt_required()
 def mineBlock():
     lastBlock = blockchain.getLastBlock()
     proof = blockchain.proofOfWork(lastBlock)
     previous_hash = blockchain.calculateHash(lastBlock)
+
+    #Create the block and add it to the chain after proof of work is complete
     block = blockchain.createNewBlock(proof, previous_hash, blockchain.uniqueID)
 
     response = {
-        'message': 'created new block',
+        'message': 'Created new block',
         'index': block['index'],
         'transactions': block['transactions'],
         'proof': block['proof'],
@@ -148,6 +83,7 @@ def mineBlock():
 
     return jsonify(response), 200
 
+#Declare endpoint '/addPeers', this POST method will add new peers to the network
 @app.route('/addPeers', methods=['POST'])
 def addPeers():
     nodes = request.get_json().get('nodes')
@@ -165,6 +101,7 @@ def addPeers():
 
     return jsonify(response), 201
 
+#Declare endpoint '/getPeers', this GET method will return all peers connected to the network
 @app.route('/getPeers', methods=['GET'])
 def getPeers():
     response = {
@@ -172,7 +109,10 @@ def getPeers():
     }
     return jsonify(response), 200
 
+#Declare endpoint '/handleNode', this is a GET method will handle any conflicts with chains on the network and return its results
+#Requires a valid JWT authentication token
 @app.route('/handleNode', methods=['GET'])
+@jwt_required()
 def handleNode():
     replaced = blockchain.handleNode()
 
@@ -189,6 +129,7 @@ def handleNode():
 
     return jsonify(response), 200
 
+#Declare endpoint '/getUniqueID', this is a GET method and will return the unique identifier associated with this node
 @app.route('/getUniqueID', methods=['GET'])
 def getUniqueID():
     response = {
@@ -196,6 +137,7 @@ def getUniqueID():
     }
     return jsonify(response), 200
 
+#Settings for running the service, may choose to specify port and unique identifier values
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-i', '--identifier', default='ABCCorp', type=str, help='unique identifier')

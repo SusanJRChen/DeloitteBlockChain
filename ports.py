@@ -1,10 +1,10 @@
-'''
-The sole purpose of this script is to initiate 10 different nodes on your localhost using python's subprocess library
-'''
+#The purpose of this script is to initiate 10 different nodes on your localhost using python's subprocess library
+
 import subprocess, sys
 
 procs = []
-#we will be initiating the blockchain server once the ports 5001, 5002, 5003, 5004, etc.
+
+#We will be initiating the blockchain server on the ports 5000, 5001, 5002, etc. with perspective unique identifiers ABCCorp, Corp 1, Corp 2, etc. by using the predefined nodes variable
 nodes = [
     ('5000', 'ABCCorp'),
     ('5001', 'Corp 1'),
@@ -18,9 +18,9 @@ nodes = [
     ('5009', 'Corp 9')
     ]
 
-#loop through each port and initiate blockchain
+#Loop through each port and initiate blockchain
 for node in nodes:
-    proc = subprocess.Popen(["python", "blockchain.py", "-p", node[0], "-i", node[1]])
+    proc = subprocess.Popen(["python", "__init__.py", "-p", node[0], "-i", node[1]])
     procs.append(proc)
 
 for proc in procs:
