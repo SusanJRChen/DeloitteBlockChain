@@ -70,6 +70,7 @@ class Blockchain:
         return hashlib.sha256(blockString).hexdigest()
 
     #proofOfWork will use the client's computing power to validate proof, also known as mining
+    
     def proofOfWork(self, lastBlock):
         lastProof = lastBlock['proof']
         lastHash = self.calculateHash(lastBlock)
@@ -110,5 +111,4 @@ class Blockchain:
                 if length > len(self.chain) and self.validChain(chain):
                     self.chain = chain
                     return True
-
         return False
