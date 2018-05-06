@@ -1,13 +1,16 @@
 <div class="main py-5">
     <div class="container">
-      <h1>Node Manager</h1>
+      <h1 class="pull-left">Node Manager</h1>
+      <div class="pull-right">
+        <button class="btn btn-primary" (click)="logout()">Logout</button>
+      </div>
     </div>
     
     <div class="container">
       <h4 class="pt-4">View chain</h4>
       
       <div class="pb-2">
-        <select class="custom-select" type="text" name="url" [ngModel]="selectedNode.uniqueID" (change)="onNodeChange($event.target.value)" disabled="true">
+        <select class="custom-select" type="text" name="url" [ngModel]="selectedNode.uniqueID" (change)="onNodeChange($event.target.value)">
           <option *ngFor="let node of nodes">{{node.uniqueID}}</option>
         </select>
       </div>
@@ -31,6 +34,9 @@
             <h5 class="modal-title">Generate Transactions</h5>
           </div>
           <div class="modal-body">
+            <div class="alert alert-warning" role="alert">
+              This will only take action on current node: {{ curID }}
+            </div>
             <p>Add test transactions to pending transactions?</p>
             <ng-table [config]="config"
               [rows]="rows_generate" [columns]="columns">
@@ -51,6 +57,9 @@
             <h5 class="modal-title">Add Transaction</h5>
           </div>
           <div class="modal-body">
+            <div class="alert alert-warning" role="alert">
+              This will only take action on current node: {{ curID }}
+            </div>
             <form (ngSubmit)="onNewTransaction()">
               <div class="form-group row">
                 <label class="col-2 col-form-label">ID</label>
@@ -119,6 +128,9 @@
             <h5 class="modal-title">Mine Block</h5>
           </div>
           <div class="modal-body">
+            <div class="alert alert-warning" role="alert">
+              This will only take action on current node: {{ curID }}
+            </div>
             <p>Mining block will validate the following transactions</p>
             <ng-table [config]="config"
               [rows]="rows_pending" [columns]="columns">
@@ -139,6 +151,9 @@
             <h5 class="modal-title">Sync</h5>
           </div>
           <div class="modal-body">
+            <div class="alert alert-warning" role="alert">
+              This will only take action on current node: {{ curID }}
+            </div>
             <p>Sync blockchain with peers?</p>   
             <table class="table">
               <thead>

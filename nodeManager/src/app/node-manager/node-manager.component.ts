@@ -4,6 +4,7 @@ import { NgTableComponent, NgTableFilteringDirective, NgTablePagingDirective, Ng
 import { Transaction } from '../model/transaction.model'
 import { ServiceNode } from '../model/servicenode.model'
 import { CurrencyMaskModule } from "ng2-currency-mask";
+import { Router } from '@angular/router';
 declare var $: any;
 
 @Component({
@@ -13,7 +14,7 @@ declare var $: any;
 
 export class NodeManagerComponent implements OnInit {
   
-  constructor(private appService: AppService) { }
+  constructor(private router: Router, private appService: AppService) { }
 
   // variables for tables displayed on view
   public rows_table:Array<Transaction> = [];
@@ -39,15 +40,21 @@ export class NodeManagerComponent implements OnInit {
   nodes: Array<ServiceNode> = [];
   selectedNode: ServiceNode;
   newTransaction : Transaction = new Transaction();
-  message: string = '';
+  message: string;
+  curConnection: string;
+  curID: string;
 
   ngOnInit() {
     // call service to get a list of nodes on the network and populate transaction table with data from selected node
     this.appService.getNodes().subscribe((response: any) => {
       this.nodes = response;
       for (var i = 0; i < this.nodes.length; i++) {
-        if(this.nodes[i].url === sessionStorage.getItem('connection')){
+        this.curConnection = sessionStorage.getItem('connection');
+        if(this.nodes[i].url === this.curConnection){
           this.selectedNode = this.nodes[i];
+          this.appService.getUniqueID(this.curConnection).subscribe((response: any) => {
+            this.curID = response.uniqueID;
+          });
       
           this.appService.getTable(this.selectedNode.url).subscribe ((response: any) => {
             this.rows_table = [];
@@ -101,7 +108,7 @@ export class NodeManagerComponent implements OnInit {
   addGeneratedTransactions() {
     if (this.rows_generate.length > 0) {
       for (var i = 0; i < this.rows_generate.length; i ++){
-        this.appService.addTransaction(this.selectedNode.url, this.rows_generate[i]).subscribe((response: any) => {
+        this.appService.addTransaction(this.curConnection, this.rows_generate[i]).subscribe((response: any) => {
           if (i == this.rows_generate.length) {
             this.rows_generate = [];
             $('#generateModal').modal('hide');
@@ -115,7 +122,7 @@ export class NodeManagerComponent implements OnInit {
 
   // call service to create a new transaction and add it to pending transactions based on user iput on a form
   onNewTransaction() {
-    this.appService.addTransaction(this.selectedNode.url, this.newTransaction).subscribe ((response: any) => {
+    this.appService.addTransaction(this.curConnection, this.newTransaction).subscribe ((response: any) => {
       $('#transactionModal').modal('hide');
       this.message = response.message;
       $('#dialog').modal('show');
@@ -127,7 +134,7 @@ export class NodeManagerComponent implements OnInit {
 
   // call service to get all pending transactions on the node and displays it in the mine block modal
   updatePendingTransactions() {
-    this.appService.getPendingTransactions(this.selectedNode.url).subscribe ((response: any) => {
+    this.appService.getPendingTransactions(this.curConnection).subscribe ((response: any) => {
       this.rows_pending = [];
       let transactions : any = response.transactions;
       this.rows_pending.push(...transactions);
@@ -136,7 +143,7 @@ export class NodeManagerComponent implements OnInit {
 
   // call service to mine the block
   mineBlock() {
-    this.appService.mineBlock(this.selectedNode.url).subscribe ((response: any) => {
+    this.appService.mineBlock(this.curConnection).subscribe ((response: any) => {
       $('#mineBlockModal').modal('hide');
       this.message = response.message;
       $('#dialog').modal('show');
@@ -146,7 +153,7 @@ export class NodeManagerComponent implements OnInit {
 
   // call service to get all peers on the current node and displays it on sync modal
   updateNodes() {
-    this.appService.getPeers(this.selectedNode.url).subscribe ((response: any) => {
+    this.appService.getPeers(this.curConnection).subscribe ((response: any) => {
       this.rows_nodes = [];
       let peers : any = response.peers;
       this.rows_nodes.push(...peers);
@@ -155,11 +162,16 @@ export class NodeManagerComponent implements OnInit {
 
   // call service to handle any conflicts on the network and updates the current node accordingly
   handleNode() {
-    this.appService.handleNode(this.selectedNode.url).subscribe ((response: any) => {
+    this.appService.handleNode(this.curConnection).subscribe ((response: any) => {
       $('#syncModal').modal('hide');
       this.message = response.message;
       $('#dialog').modal('show');
       this.onNodeChange(this.selectedNode);
     });
+  }
+
+  logout() {
+    sessionStorage.clear();
+    this.router.navigate(['/']);
   }
 }
